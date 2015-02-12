@@ -4,12 +4,7 @@ use Data::Dumper;
 use List::Util qw/shuffle/;
 
 # STEP 0: The user is asked which file contains the data for the quizz session
-#print "Which quizz file do you want to use?\n";
-#my $filename = <>;
-#chomp($filename);
-
-#open (my $fh, '<:encoding(UTF-8)', $filename)
-#or die "Could not open file '$filename' $!";
+set();
 
 # STEP 1: The data from the file is extracted and put into a dictionnary
 
@@ -21,13 +16,44 @@ $hash{ 'key1' } = ['value1.1', 'value2.1'];
 $hash{ 'key2' } = ['value1.2'];
 $hash{ 'key3' } = ['value1.3', 'value2.3', 'value3.3'];
 
-ask(\%hash);
+#ask(\%hash);
 
 # STEP 3: A total score is given and the session ends
 
-#close $fh;
-
 ##########################################
+
+sub set {
+	print "Which quizz file do you want to use?\n";
+	my $filename = <>;
+	chomp($filename);
+	open FILE, "$filename" or die $!;
+	my @lines = <FILE>;
+	my $key = "";
+	my %hash = ();
+	my @values= ();
+	my $i = 0;
+	my $numberOfQuestions;
+	while ($i < $#lines) {
+		chomp($lines[$i]);
+		if ($lines[$i] eq "**") {
+			$numberOfQuestions++;
+			if (@values) {
+				print "@values\n";
+				@{$hash{ $key }} = @values;
+				@values = ();
+			}
+			$i++;
+			$key = $lines[$i];
+		} else {
+			push(@values, $lines[$i]);
+		}
+		$i++;
+	}
+	print "There are $numberOfQuestions questions in this file.\n";
+	close FILE;
+	print Dumper(\%hash);
+#	ask(\%hash);
+}
 
 sub ask {
 # This subroutine will display a question and all the possible answers
